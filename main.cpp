@@ -1,23 +1,30 @@
-#include "iostream"
+#include <iostream>
+
+#include "color.hpp"
+#include "ray.hpp"
+#include "vec3.hpp"
+
+constexpr double kAspectRation = 16.0 / 9.0;
+constexpr int kImageWidth = 400;
 
 int main() {
-  int imageWidth = 256;
-  int imageHeight = 256;
+  int imageWidth = kImageWidth;
+  int imageHeight = static_cast<int>(imageHeight / kAspectRation);
+  imageHeight = imageHeight < 1 ? 1 : imageHeight;
+
+  auto viewportHeight = 2.0;
+  auto viewportWidth =
+      viewportHeight * (static_cast<double>(imageWidth) / imageHeight);
 
   std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 
   for (int j = 0; j < imageHeight; j++) {
+    std::clog << "\rScanlines remaining: " << imageHeight - j << ' '
+              << std::flush;
     for (int i = 0; i < imageWidth; i++) {
-      std::clog << "\rScanlines remaining: " << imageHeight - i << ' ' << std::flush;
-      auto r = static_cast<double>(i) / (imageWidth - 1);
-      auto g = static_cast<double>(j) / (imageHeight - 1);
-      auto b = 0;
-
-      int ir = static_cast<int>(255.999 * r);
-      int ig = static_cast<int>(255.999 * g);
-      int ib = static_cast<int>(255.999 * b);
-
-      std::cout << ir << ' ' << ig << ' ' << ib << '\n';
+      auto pixel = color(static_cast<double>(i) / (imageWidth - 1),
+                         static_cast<double>(j) / (imageHeight - 1), 0);
+      writeColor(std::cout, pixel);
     }
   }
 
