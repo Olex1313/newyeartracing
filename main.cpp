@@ -1,30 +1,18 @@
 #include <cmath>
 #include <iostream>
 
-#include "color.hpp"
+#include "hittable.hpp"
 #include "ray.hpp"
-#include "vec3.hpp"
+#include "rtweekend.hpp"
+#include "sphere.hpp"
 
 constexpr double kAspectRation = 16.0 / 9.0;
 constexpr int kImageWidth = 400;
 
-double hitsSphere(const point3 &center, double radius, const ray &r) {
-  vec3 oc = center - r.origin();
-  auto a = dot(r.direction(), r.direction());
-  auto b = -2.0 * dot(r.direction(), oc);
-  auto c = dot(oc, oc) - radius * radius;
-  auto discriminant = b * b - 4 * a * c;
-  if (discriminant < 0) {
-    return -1.0;
-  }
-  return (-b - std::sqrt(discriminant)) / 2.0 * a;
-}
-
-color computeRayColor(const ray &r) {
-  auto t = hitsSphere(point3(0, 0, -1), 0.5, r);
-  if (t > 0.0) {
-    vec3 N = unitVector(r.at(t) - vec3(0, 0, -1));
-    return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
+color computeRayColor(const ray &r, const hittable &object) {
+  hitRecord hitRec;
+  if (object.hit(r, 0, kInfinity, hitRec)) {
+    return 0.5 * (hitRec.normal + color(1, 1, 1));
   }
 
   vec3 unitDirection = unitVector(r.direction());
@@ -36,6 +24,12 @@ int main() {
   int imageWidth = kImageWidth;
   int imageHeight = static_cast<int>(imageWidth / kAspectRation);
   imageHeight = imageHeight < 1 ? 1 : imageHeight;
+
+  // World
+
+  hittableList objects;
+  objects.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5));
+  objects.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100));
 
   // Setup camera
   auto focalLength = 1.0;
@@ -66,7 +60,7 @@ int main() {
       auto rayDirection = pixelCenter - cameraCenter;
 
       ray r(cameraCenter, rayDirection);
-      auto pixelColor = computeRayColor(r);
+      auto pixelColor = computeRayColor(r, objects);
       writeColor(std::cout, pixelColor);
     }
   }

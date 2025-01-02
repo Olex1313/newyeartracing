@@ -8,4 +8,4 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wextra-semi -O1 -g -fsanitize=address -fno-omit-frame-pointer")
 
-add_executable(tracer main.cpp ray.hpp color.hpp vec3.hpp)
+add_executable(tracer main.cpp sphere.hpp hittable.hpp rtweekend.hpp ray.hpp color.hpp vec3.hpp)
