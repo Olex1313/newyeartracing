@@ -11,7 +11,7 @@ constexpr int kImageWidth = 400;
 
 color computeRayColor(const ray &r, const hittable &object) {
   hitRecord hitRec;
-  if (object.hit(r, 0, kInfinity, hitRec)) {
+  if (object.hit(r, interval(0, kInfinity), hitRec)) {
     return 0.5 * (hitRec.normal + color(1, 1, 1));
   }
 

@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "interval.hpp"
 #include "ray.hpp"
 
 struct hitRecord {
@@ -21,8 +22,7 @@ class hittable {
 public:
   virtual ~hittable() = default;
 
-  virtual bool hit(const ray &r, double rayTmin, double rayTmax,
-                   hitRecord &rec) const = 0;
+  virtual bool hit(const ray &r, interval rayT, hitRecord &rec) const = 0;
 };
 
 class hittableList : public hittable {
@@ -37,14 +37,13 @@ public:
 
   void add(std::shared_ptr<hittable> obj) { objects_.push_back(obj); }
 
-  bool hit(const ray &r, double rayTmin, double rayTmax,
-           hitRecord &rec) const override {
+  bool hit(const ray &r, interval rayT, hitRecord &rec) const override {
     hitRecord hitRec;
     bool hitAnything = false;
-    auto closestHit = rayTmax;
+    auto closestHit = rayT.max;
 
     for (const auto &obj : objects_) {
-      if (obj->hit(r, rayTmin, closestHit, hitRec)) {
+      if (obj->hit(r, interval(rayT.min, closestHit), hitRec)) {
         hitAnything = true;
         closestHit = hitRec.t;
         rec = hitRec;
