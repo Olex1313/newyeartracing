@@ -4,8 +4,12 @@
 
 class camera {
 public:
+  static const int kSamplesPerPixel = 100;
+
+public:
   camera(double aspectRatio, int imageWidth)
-      : aspectRatio_(aspectRatio), imageWidth_(imageWidth) {
+      : aspectRatio_(aspectRatio), pixelSamplesScale(1.0 / kSamplesPerPixel),
+        imageWidth_(imageWidth) {
 
     imageHeight_ = static_cast<int>(imageWidth_ / aspectRatio_);
     imageHeight_ = imageHeight_ < 1 ? 1 : imageHeight_;
@@ -35,13 +39,12 @@ public:
       std::clog << "\rScanlines remaining: " << imageHeight_ - j << ' '
                 << std::flush;
       for (int i = 0; i < imageWidth_; i++) {
-        auto pixelCenter =
-            pixel00Location_ + (i * pixelDeltaU_) + (j * pixelDeltaY_);
-        auto rayDirection = pixelCenter - center_;
-
-        ray r(center_, rayDirection);
-        auto pixelColor = computeRayColor(r, world);
-        writeColor(std::cout, pixelColor);
+        color pixelColor(0, 0, 0);
+        for (int sample = 0; sample < kSamplesPerPixel; sample++) {
+          ray r = getRay(i, j);
+          pixelColor += computeRayColor(r, world);
+        }
+        writeColor(std::cout, pixelSamplesScale * pixelColor);
       }
     }
 
@@ -60,8 +63,24 @@ private:
     return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
   }
 
+  vec3 sampleSquare() const {
+    return vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
+  }
+
+  ray getRay(int i, int j) const {
+    auto offset = sampleSquare();
+    auto pixelSample = pixel00Location_ + ((i + offset.x()) * pixelDeltaU_) +
+                       ((j + offset.y()) * pixelDeltaY_);
+
+    auto rayOrigin = center_;
+    auto rayDirection = pixelSample - rayOrigin;
+
+    return ray(rayOrigin, rayDirection);
+  }
+
 private:
   double aspectRatio_;
+  double pixelSamplesScale;
   int imageWidth_, imageHeight_;
   point3 center_, pixel00Location_;
   vec3 pixelDeltaU_, pixelDeltaY_;
