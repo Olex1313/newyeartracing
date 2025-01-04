@@ -5,6 +5,8 @@
 class camera {
 public:
   static const int kSamplesPerPixel = 100;
+  static const int kMaxDepth = 50;
+  static constexpr double kGammaFactor = 0.5;
 
 public:
   camera(double aspectRatio, int imageWidth)
@@ -42,7 +44,7 @@ public:
         color pixelColor(0, 0, 0);
         for (int sample = 0; sample < kSamplesPerPixel; sample++) {
           ray r = getRay(i, j);
-          pixelColor += computeRayColor(r, world);
+          pixelColor += computeRayColor(r, kMaxDepth, world);
         }
         writeColor(std::cout, pixelSamplesScale * pixelColor);
       }
@@ -52,10 +54,15 @@ public:
   }
 
 private:
-  color computeRayColor(const ray &r, const hittable &object) const {
+  color computeRayColor(const ray &r, int depth, const hittable &object) const {
+    if (depth <= 0) {
+      return color(0, 0, 0);
+    }
     hitRecord hitRec;
-    if (object.hit(r, interval(0, kInfinity), hitRec)) {
-      return 0.5 * (hitRec.normal + color(1, 1, 1));
+    if (object.hit(r, interval(0.001, kInfinity), hitRec)) {
+      auto direction = hitRec.normal + randomUnitVector();
+      return kGammaFactor *
+             computeRayColor(ray(hitRec.p, direction), depth - 1, object);
     }
 
     vec3 unitDirection = unitVector(r.direction());
