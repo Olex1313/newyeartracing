@@ -6,9 +6,12 @@
 #include "interval.hpp"
 #include "ray.hpp"
 
+class material;
+
 struct hitRecord {
   point3 p;
   vec3 normal;
+  std::shared_ptr<material> mat;
   double t;
   bool frontFace;
 

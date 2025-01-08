@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hittable.hpp"
+#include "material.hpp"
 
 class camera {
 public:
@@ -60,9 +61,14 @@ private:
     }
     hitRecord hitRec;
     if (object.hit(r, interval(0.001, kInfinity), hitRec)) {
-      auto direction = hitRec.normal + randomUnitVector();
-      return kGammaFactor *
-             computeRayColor(ray(hitRec.p, direction), depth - 1, object);
+      ray scattered;
+      color attenuation;
+
+      if (hitRec.mat->scatter(r, hitRec, attenuation, scattered)) {
+        return attenuation * computeRayColor(scattered, depth - 1, object);
+      }
+
+      return color(0, 0, 0);
     }
 
     vec3 unitDirection = unitVector(r.direction());

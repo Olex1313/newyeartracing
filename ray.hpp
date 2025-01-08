@@ -8,12 +8,14 @@ public:
 
   ray(const point3 &origin, const vec3 &dir) : origin_(origin), dir_(dir) {}
 
+  ray(const ray &other) : origin_(other.origin_), dir_(other.dir_) {}
+
   const point3 &origin() const { return origin_; }
   const vec3 &direction() const { return dir_; }
 
   point3 at(double t) const { return origin_ + t * dir_; }
 
 private:
-  const point3 origin_;
-  const vec3 dir_;
+  point3 origin_;
+  vec3 dir_;
 };

@@ -12,6 +12,8 @@ public:
 
   vec3(double x, double y, double z) : e_{x, y, z} {}
 
+  vec3(const vec3 &other) : e_(other.e_) {}
+
   double x() const { return e_[0]; }
   double y() const { return e_[1]; }
   double z() const { return e_[2]; }
@@ -40,6 +42,12 @@ public:
 
   double lengthSquared() const {
     return e_[0] * e_[0] + e_[1] * e_[1] + e_[2] * e_[2];
+  }
+
+  bool nearZero() const {
+    constexpr auto s = 1e-8;
+    return (std::fabs(e_[0]) < s) && (std::fabs(e_[0]) < s) &&
+           (std::fabs(e_[0]) < s);
   }
 
   static vec3 random() {
@@ -105,4 +113,8 @@ inline vec3 randomOnHemisphere(const vec3 &normal) {
     return onUnitSphere;
   } // In the same hemisphere as the normal
   return -onUnitSphere;
+}
+
+inline vec3 reflect(const vec3 &v, const vec3 &n) {
+  return v - 2 * dot(v, n) * n;
 }
